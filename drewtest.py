@@ -337,7 +337,6 @@ To: Mr Smith """
 
     # Update indicators
     if False:
-
         ip = "%d.%d.%d.%d" % (randint(1,255), randint(1,255), randint(1,255), randint(1,255))
         results = tc.create_address(ip, rating="1.0", confidence=11)
 
@@ -349,6 +348,13 @@ To: Mr Smith """
 
         url = "https://editable-badguy.net/%d/ok.php?id=%d" % (randint(1,1000), randint(1,1000))
         results = tc.create_url(url, rating="1.0", confidence=11)
+        
+        sha256 = hashlib.sha256()
+        sha256.update(str(randint(1,100000)))
+        sha256_hash = sha256.hexdigest()
+
+        hashes = {'sha256':sha256_hash}
+        results = tc.create_file(hashes, rating="1.0", confidence=11)
 
         results = tc.update_address(ip, rating="5.0", confidence=55)
         if results.status() == "Success":
@@ -371,6 +377,12 @@ To: Mr Smith """
         results = tc.update_url(url, rating="5.0", confidence=55)
         if results.status() == "Success":
             print "%s rating and confidence updated!" % url
+        else:
+            print results.error_message_list()
+            
+        results = tc.update_file(sha256_hash, rating="5.0", confidence=56, size=12345)
+        if results.status() == "Success":
+            print "%s rating and confidence updated!" % sha256_hash
         else:
             print results.error_message_list()
 
@@ -510,7 +522,7 @@ To: Mr Smith """
         print "after: %s" % labels 
 
     # Security labels for group attributes
-    if True:
+    if False:
         threat_name = "Security Label Threat %d" % randint(1,100000000)
         results = tc.create_threat(threat_name)
         new_threat = results.single_result()
@@ -529,6 +541,37 @@ To: Mr Smith """
         results = tc.get_securityLabels_for_attribute('threats', new_threat['id'], new_att['id'])
         labels = json.loads(results.data().json())
         print "after: %s" % labels     
+    
+    # file occurrences
+    if True:
+        randval = str(randint(1,10000000000))
+        md5 = hashlib.md5()
+        md5.update(randval)
+        md5_hash = md5.hexdigest()
+
+        tc.create_file({'md5':md5_hash})
+        print "Created file {}".format(md5_hash)
+        
+        results = tc.create_fileOccurrence(md5_hash, fileName="API file.exe", path="C:\Runpath 23", date="2014-11-10T13:09:14-05:00")
+        new_occ = results.single_result()
+        print "Created occurrence with id {0}, path={1}".format(new_occ['id'], new_occ['path'])
+        
+        results = tc.update_fileOccurrence(md5_hash, new_occ['id'], fileName="Renamed API.exe", path=r"C:\axxx\bxxx\fxxx\nxxx\rxxx\txxx\uxx\Uxx\vxxx\xabc", date="2014-01-10T13:09:14-05:00")
+        if results.status() == "Success":
+            new_occ = results.single_result()
+            print "Occurrence updated successfully with path {}!".format(new_occ['path'])
+        else:
+            print results.error_message_list()
+        
+        results = tc.create_fileOccurrence(md5_hash, fileName="deletable_file.exe", path="C:\deleteme23", date="2014-11-10T13:09:14-05:00")
+        new_occ = results.single_result()
+        print "Created occurrence with id {0}, path={1}".format(new_occ['id'], new_occ['path'])
+        
+        results = tc.delete_fileOccurrence(md5_hash, new_occ['id'])
+        if results.status() == "Success":
+            print "Occurrence deleted successfully!"
+        else:
+            print results.error_message_list()
         
 
         '''

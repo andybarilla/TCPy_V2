@@ -12,7 +12,6 @@ import time
 import urllib
 import datetime
 
-
 # import config items
 from _config import *
 
@@ -411,7 +410,7 @@ class ThreatConnect(object):
 
         return self._create_indicator("urls", body, owners)
 
-    def create_file(self, hashes, rating=None, confidence=None, owners=None):
+    def create_file(self, hashes, rating=None, confidence=None, size=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -423,6 +422,12 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_confidence)
             return tr
+            
+        if size is not None and not isinstance(size, int):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message("The file size variable must be an integer.")   #todo configurable
+            return tr
 
         body = hashes
             
@@ -431,8 +436,38 @@ class ThreatConnect(object):
 
         if rating is not None:
             body['rating'] = rating
+            
+        if size is not None:
+            body['size'] = size
 
         return self._create_indicator("files", body, owners)
+        
+    def create_fileOccurrence(self, hash, fileName=None, path=None, date=None, owners=None):
+        # validate indicator
+        if not self._validate_indicator(hash):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)    
+            tr.add_error_message(self._bad_indicator)
+            return tr
+        
+        #todo validate date
+        
+        body = {}
+        if fileName is not None:
+            body['fileName'] = fileName
+        if path is not None:
+            body['path'] = path
+        if date is not None:
+            body['date'] = date
+            
+        request_uri = self._resource_types['indicators']['request_uri']
+        request_uri += "/files"
+        request_uri += "/%s" % hash
+        request_uri += "/fileOccurrences"
+        
+        tr = ThreatResponse(['id', 'fileName', 'path', 'date'])
+        
+        return self._api_response_owners(tr, request_uri, owners=owners, method="POST", body=body)
 
     def _create_indicator(self, indicator_type, body=None, owners=None):
         # indicator type
@@ -721,6 +756,31 @@ class ThreatConnect(object):
         request_uri += "/tags/%s" % urllib.quote(tag, safe='')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
+        
+    def delete_fileOccurrence(self, hash, id, owners=None):
+        # validate indicator
+        if not self._validate_indicator(hash):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)    
+            tr.add_error_message(self._bad_indicator)
+            return tr
+        
+        # validate fileOccurrence id
+        if not id or not isinstance(id, int):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)    
+            tr.add_error_message("Bad fileOccurrence ID, must be an integer")
+            return tr
+            
+        request_uri = self._resource_types['indicators']['request_uri']
+        request_uri += "/files" 
+        request_uri += "/%s" % hash
+        request_uri += "/fileOccurrences"
+        request_uri += "/%d" % int(id)
+        
+        tr = ThreatResponse([])
+        
+        return self._api_response_owners(tr, request_uri, owners, method="DELETE")
 
     def delete_securityLabel_from_indicator(self, indicator_type, indicator, securityLabel, owners=None):
         # validate indicator type
@@ -1978,6 +2038,71 @@ class ThreatConnect(object):
             body['confidence'] = confidence
 
         return self._update_indicator('emailAddresses', emailAddress, body=body, owners=owners)
+        
+    def update_file(self, hash, rating=None, confidence=None, size=None, owners=None):
+        if rating is not None and not self._validate_rating(rating):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message(self._bad_rating)
+            return tr
+
+        if confidence is not None and not self._validate_confidence(confidence):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message(self._bad_confidence)
+            return tr
+            
+        if size is not None and not isinstance(size, int):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message("The size variable must be an integer.")   #todo configurable
+            return tr
+
+        body = {}
+        if rating is not None:
+            body['rating'] = rating
+        if confidence is not None:
+            body['confidence'] = confidence
+        if size is not None:
+            body['size'] = size
+            
+            
+        return self._update_indicator('files', hash, body=body, owners=owners)
+        
+    def update_fileOccurrence(self, hash, id, fileName=None, path=None, date=None, owners=None):
+        # validate indicator
+        if not self._validate_indicator(hash):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)    
+            tr.add_error_message(self._bad_indicator)
+            return tr
+            
+        # validate fileOccurrence id
+        if not id or not isinstance(id, int):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)    
+            tr.add_error_message("Bad fileOccurrence ID, must be an integer")
+            return tr
+        
+        #todo validate date
+        
+        body = {}
+        if fileName is not None:
+            body['fileName'] = fileName
+        if path is not None:
+            body['path'] = path
+        if date is not None:
+            body['date'] = date
+                      
+        request_uri = self._resource_types['indicators']['request_uri']
+        request_uri += "/files" 
+        request_uri += "/%s" % hash
+        request_uri += "/fileOccurrences"
+        request_uri += "/%d" % int(id)
+        
+        tr = ThreatResponse(['id', 'fileName', 'path', 'date'])
+        
+        return self._api_response_owners(tr, request_uri, owners=owners, method="PUT", body=body)
 
     def update_url(self, url, rating=None, confidence=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
@@ -2000,7 +2125,7 @@ class ThreatConnect(object):
 
         return self._update_indicator('urls', url, body=body, owners=owners)
 
-    def update_host(self, host, rating=None, confidence=None, whois=None, dns=None):
+    def update_host(self, host, rating=None, confidence=None, whois=None, dns=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -2411,7 +2536,7 @@ class ThreatConnect(object):
                 'address', 'confidence', 'dateAdded', 'description', 'id',
                 'lastModified', 'owner', 'rating', 'source', 'webLink'],
             'files': [
-                'confidence', 'dateAdded', 'fileOccurence', 'id',
+                'confidence', 'dateAdded',  'id',
                 'lastModified', 'md5', 'owner', 'rating', 'sha1', 'sha256',
                 'webLink'],
             'hosts': [
@@ -2962,6 +3087,7 @@ class ThreatResponse(object):
             'email': EmailData,
             'emailAddress': EmailIndicatorData,
             'file': FileIndicatorData,
+            'fileOccurrence': FileOccurrenceData,
             'group': GroupData,
             'host': HostIndicatorData,
             'incident': IncidentData,
@@ -3144,7 +3270,7 @@ class ResultData(object):
 
                 if header not in data.keys():
                     csvrow.append("")
-                elif header == 'fileOccurence':
+                elif header == 'fileOccurrence':
                     if len(data[header]) > 0:
                         occurence_data = ""
                         for occurence in data[header]:
@@ -3391,7 +3517,19 @@ class AttributeData(ResultData):
     def __init__(self, data_structure):
         ResultData.__init__(self, data_structure)
         self._data = []
-
+        
+class FileOccurrenceData(ResultData):
+    """
+    
+    "fileOccurrence" : [ {
+      "id" : 8211,
+      "fileName" : "test.dll",
+      "path" : "C:\\Windows",
+      "date" : "2014-11-09T19:00:00-05:00"}]
+    """
+    def __init__(self, data_structure):
+        ResultData.__init__(self, data_structure)
+        self._data = []
 
 class EmailData(ResultData):
     """Email Data
@@ -3646,6 +3784,7 @@ class IndicatorData(ResultData):
 
         return self._dnsActive_list
 
+    #todo, this no longer works
     def fileOccurence_list(self):
         for data in self._data:
             if 'fileOccurence' in data.keys():
