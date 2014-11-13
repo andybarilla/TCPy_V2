@@ -85,7 +85,7 @@ bad_rating = 'rating must be string in ["1.0", "2.0", "3.0", "4.0", "5.0"]'
 #
 # error message for bad confidence
 #
-bad_confidence = 'rating must be integer between 1-100'
+bad_confidence = 'confidence must be integer between 1-100'
 
 #
 # address indicator (ipv4/ipv6 regex)
@@ -125,7 +125,7 @@ sha256_re = re.compile(sha256_pat)
 #
 # host indicator
 #
-host_pat = r'^[a-zA-Z\d-]{,63}(\.[a-zA-Z\d-]{,63}){1,2}$'
+host_pat = r'\b(([a-zA-Z0-9\-_]+)\.)+(?!exe|php|dll|doc|docx|txt|rtf|odt|xls|xlsx|ppt|pptx|bin|pcap|ioc|pdf|mdb|asp|html|xml|jpg|gif|png|lnk|log|vbs|lco|bat|shell|quit|pdb|vbp|bdoda|bsspx|save|cpl|wav|tmp|close|py|ico|ini|sleep|run|dat|scr|jar|jxr|apt|w32|css|js|xpi|class|apk|rar|zip|hlp|tmp|cpp|crl|cfg|cer|plg|tmp)([a-zA-Z]{2,5})\b'
 host_re = re.compile(host_pat)
 
 #

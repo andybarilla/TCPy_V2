@@ -25,7 +25,8 @@ done intentionally to match the ThreatConnect API naming convention.
 
 * implement dnsResolutions
 * implement adversary assets
-
+* attribute createifexists
+* fix attribute displayed behavior
 """
 
 
@@ -447,7 +448,7 @@ class ThreatConnect(object):
             return False
 
         #todo - 0?
-        return confidence in range(1,100)
+        return confidence in range(1,101)
     
     def _generate_headers(self, request_method, api_uri):
         """Generate HTTP headers for API request.
@@ -1103,7 +1104,9 @@ class ThreatConnect(object):
             tr.add_error_message("The file size variable must be an integer.")   #todo configurable
             return tr
 
-        body = hashes
+        body = {}
+        for h in hashes:
+            body[h] = hashes[h]
             
         if confidence is not None:
             body['confidence'] = confidence
@@ -1113,6 +1116,8 @@ class ThreatConnect(object):
             
         if size is not None:
             body['size'] = size
+            
+            
 
         return self._create_indicator("files", body, owners)
         
@@ -1213,7 +1218,7 @@ class ThreatConnect(object):
         # user might not want to create duplicate threats if they exist
         if not createIfExists:
             self.add_filter('name', '==', name)
-            results = self.get_adversaries()
+            results = self.get_adversaries(owners=owners)
             self.reset_filter()
             if results.single_result() is not None:
                 return results
@@ -1257,7 +1262,7 @@ class ThreatConnect(object):
         # user might not want to create duplicate threats if they exist
         if not createIfExists:
             self.add_filter('name', '==', name)
-            results = self.get_emails()
+            results = self.get_emails(owners=owners)
             self.reset_filter()
             if results.single_result() is not None:
                 return results
@@ -1291,7 +1296,7 @@ class ThreatConnect(object):
         # user might not want to create duplicate threats if they exist
         if not createIfExists:
             self.add_filter('name', '==', name)
-            results = self.get_incidents()
+            results = self.get_incidents(owners=owners)
             self.reset_filter()
             if results.single_result() is not None:
                 return results
@@ -1329,7 +1334,7 @@ class ThreatConnect(object):
         # user might not want to create duplicate signature if they exist
         if not createIfExists:
             self.add_filter('name', '==', name)
-            results = self.get_signatures()
+            results = self.get_signatures(owners=owners)
             self.reset_filter()
             if results.single_result() is not None:
                 return results
@@ -1348,7 +1353,7 @@ class ThreatConnect(object):
         # user might not want to create duplicate threats if they exist
         if not createIfExists:
             self.add_filter('name', '==', name)
-            results = self.get_threats()
+            results = self.get_threats(owners=owners)
             self.reset_filter()
             if results.single_result() is not None:
                 return results
