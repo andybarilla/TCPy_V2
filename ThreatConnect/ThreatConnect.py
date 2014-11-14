@@ -1372,7 +1372,7 @@ class ThreatConnect(object):
 
         return self._create_group("threats", body=body, owners=owners)
 
-    def create_indicator_attribute(self, indicator_type, indicator, attribute_type, attribute_value, displayed="false", owners=None):
+    def create_indicator_attribute(self, indicator_type, indicator, attribute_type, attribute_value, createIfExists=True, displayed=False, owners=None):
         # indicator type
         if not self._validate_indicator_type(indicator_type):
             tr = ThreatResponse([])
@@ -1388,6 +1388,20 @@ class ThreatConnect(object):
             return tr
 
         #todo - validate "displayed" field?
+        
+        # If createIfExists flag is set to False, check and update existing attribute of this type
+        # TODO - needs some love to check for multiple instances of attributes; currently just updates first instance
+        if not createIfExists:
+            att_results = self.get_indicator_attributes(indicator_type, indicator, owners=owners)
+            if att_results.status() != "Success":
+                return
+            
+            atts = json.loads(att_results.data().json())
+            for att in atts:
+                if att['type'].lower() == attribute_type.lower():
+                    return self.update_indicator_attribute(indicator_type, indicator, att['id'], attribute_value, displayed=displayed, owners=owners)
+            
+                
 
         body = {'type' : attribute_type, 'value' : attribute_value, 'displayed' : displayed}
         data_structure = ['dateAdded', 'id', 'type', 'value', 'lastModified', 'displayed']
@@ -1403,7 +1417,7 @@ class ThreatConnect(object):
 
         return self._api_response_owners(tr, request_uri, owners=owners, body=body, method="POST")        
     
-    def create_group_attribute(self, group_type, group_id, attribute_type, attribute_value, displayed=None, owners=None):
+    def create_group_attribute(self, group_type, group_id, attribute_type, attribute_value, createIfExists=True, displayed=None, owners=None):
        # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
             tr = ThreatResponse([])
@@ -1417,6 +1431,18 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message("Group ID must be an integer")   #todo make thsi configurable
             return tr
+            
+        # If createIfExists flag is set to False, check and update existing attribute of this type
+        # TODO - needs some love to check for multiple instances of attributes; currently just updates first instance
+        if not createIfExists:
+            att_results = self.get_group_attributes(group_type, group_id, owners=owners)
+            if att_results.status() != "Success":
+                return
+            
+            atts = json.loads(att_results.data().json())
+            for att in atts:
+                if att['type'].lower() == attribute_type.lower():
+                    return self.update_group_attribute(group_type, group_id, att['id'], attribute_value, displayed=displayed, owners=owners)
 
         body = {'type' : attribute_type, 'value' : attribute_value}
 
@@ -1920,6 +1946,8 @@ class ThreatConnect(object):
             tr.add_error_message(self._bad_indicator)
             return tr
 
+        if indicator_type == 'urls':
+            indicator = urllib.quote(indicator, safe='')
 
         data_structure = ['dateAdded', 'id', 'type', 'value', 'lastModified', 'displayed']
         tr = ThreatResponse(data_structure)
