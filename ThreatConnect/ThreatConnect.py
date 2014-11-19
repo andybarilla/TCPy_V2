@@ -1435,7 +1435,7 @@ class ThreatConnect(object):
         # If createIfExists flag is set to False, check and update existing attribute of this type
         # TODO - needs some love to check for multiple instances of attributes; currently just updates first instance
         if not createIfExists:
-            att_results = self.get_group_attributes(group_type, group_id, owners=owners)
+            att_results = self.get_group_attributes(group_type, group_id)
             if att_results.status() != "Success":
                 return
             
@@ -1984,7 +1984,6 @@ class ThreatConnect(object):
         data_structure = ['dateAdded', 'id', 'type', 'value']
         tr = ThreatResponse(data_structure)
         tr.add_filter(self._data_filter)
-        owners = [self._api_org]  # set owner to default org
         resource_type = "attributes"
 
         # create request uri
@@ -1993,7 +1992,7 @@ class ThreatConnect(object):
         request_uri += "/%s" % group_id
         request_uri += "/attributes"
 
-        return self._api_response_pagination(tr, request_uri, owners)
+        return self._api_response_owners(tr, request_uri, owners=None)
 
     def get_groups(self, owners=None):
         """Get all group threats.
