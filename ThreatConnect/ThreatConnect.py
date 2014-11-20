@@ -1394,7 +1394,7 @@ class ThreatConnect(object):
         if not createIfExists:
             att_results = self.get_indicator_attributes(indicator_type, indicator, owners=owners)
             if att_results.status() != "Success":
-                return
+                return att_results
             
             atts = json.loads(att_results.data().json())
             for att in atts:
@@ -1437,7 +1437,7 @@ class ThreatConnect(object):
         if not createIfExists:
             att_results = self.get_group_attributes(group_type, group_id)
             if att_results.status() != "Success":
-                return
+                return att_results
             
             atts = json.loads(att_results.data().json())
             for att in atts:
