@@ -140,7 +140,7 @@ class ThreatConnect(object):
             tr.add_response_data(api_response['data'])
 
         elif api_response['status'] == 'Failure':
-            tr.add_error_message(api_response['errorMessage'])
+            tr.add_error_message(api_response['message'])
 
         return tr
 
@@ -273,7 +273,7 @@ class ThreatConnect(object):
 
                 # successful api request
                 if api_response['status'] == 'Failure':
-                    tr.add_error_message(api_response['errorMessage'])
+                    tr.add_error_message(api_response['message'])
 
                     # move on to next owner
                     break
