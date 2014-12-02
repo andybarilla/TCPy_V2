@@ -24,9 +24,8 @@ Some function name do not adhere to standard naming conventions.  This was
 done intentionally to match the ThreatConnect API naming convention.
 
 * implement dnsResolutions
-* implement adversary assets
-* attribute createifexists
-* fix attribute displayed behavior
+* adding error messages/required fields to configs
+* certain field validation
 """
 
 
@@ -88,16 +87,18 @@ class ThreatConnect(object):
         else:
             body_json = None
 
+        # Change this if you're using a self-signed/unsigned cert (priv cloud/on prem)
+        VERIFY=True
         if method == 'GET':
-            api_response = self._rh.get(full_path, headers=api_headers, verify=False)
+            api_response = self._rh.get(full_path, headers=api_headers, verify=VERIFY)
         elif method == 'POST':
             api_headers['Content-Type'] = 'application/json'
-            api_response = self._rh.post(full_path, data=body_json, headers=api_headers, verify=False)
+            api_response = self._rh.post(full_path, data=body_json, headers=api_headers, verify=VERIFY)
         elif method == 'PUT':
             api_headers['Content-Type'] = 'application/json'
-            api_response = self._rh.put(full_path, data=body_json, headers=api_headers, verify=False)
+            api_response = self._rh.put(full_path, data=body_json, headers=api_headers, verify=VERIFY)
         elif method == 'DELETE':
-            api_response = self._rh.delete(full_path, headers=api_headers, verify=False)
+            api_response = self._rh.delete(full_path, headers=api_headers, verify=VERIFY)
 
 
 
@@ -360,8 +361,8 @@ class ThreatConnect(object):
             'adversaries': ['name'],
             'incidents' : ['name', 'eventDate'],
             'threats' : ['name'],
-            'emails' : [] ,      #todo fix these
-            'signatures' : []
+            'emails' : ['name', 'subject', 'header', 'body'],
+            'signatures' : ['name', 'fileName', 'fileType', 'fileText']
         }
         
         # all required fields as defined above must be in body
@@ -371,11 +372,6 @@ class ThreatConnect(object):
             tr.add_error_message(self._bad_group_type)      #todo - appropriate error
             return tr
 
-        # validate the fields themselves
-        valid = True
-        #for k in required_fields[group_type]:
-            #todo - separate funciton? more validation types?
-            #if k == "eventDate":
 
         tr = ThreatResponse(self._data_structures[group_type])
 
@@ -1211,8 +1207,8 @@ class ThreatConnect(object):
             'adversaries': ['name'],
             'incidents' : ['name', 'eventDate'],
             'threats' : ['name'],
-            'emails' : [],       #todo fix these
-            'signatures' : []
+            'emails' : ['name', 'subject', 'header', 'body'],
+            'signatures' : ['name', 'fileName', 'fileType', 'fileText']
         }
 
         # user might not want to create duplicate threats if they exist
@@ -1289,9 +1285,9 @@ class ThreatConnect(object):
             'adversaries': ['name'],
             'incidents' : ['name', 'eventDate'],
             'threats' : ['name'],
-            'emails' : [],       #todo fix these
-            'signatures' : [] 
-        }    
+            'emails' : ['name', 'subject', 'header', 'body'],
+            'signatures' : ['name', 'fileName', 'fileType', 'fileText']
+        }
 
         # user might not want to create duplicate threats if they exist
         if not createIfExists:
@@ -1364,8 +1360,8 @@ class ThreatConnect(object):
             'adversaries': ['name'],
             'incidents' : ['name', 'eventDate'],
             'threats' : ['name'],
-            'emails' : [],       #todo fix these
-            'signatures' : []
+            'emails' : ['name', 'subject', 'header', 'body'],
+            'signatures' : ['name', 'fileName', 'fileType', 'fileText']
         }
 
         body = {'name' : name}
