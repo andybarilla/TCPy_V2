@@ -12,6 +12,7 @@ Configuration
 The ThreatConnectPythonClient contains two important files:
   1.  ```tc.conf``` contains the configuration for your API Access ID and Secret Key, as well as your Organization and ThreatConnect instance you'd like to access.
   2.  ```ThreatConnect/_config.py``` contains the paths of your API resources (e.g. "/v2/owners").  If your ThreatConnect instance contains something else in the path (e.g. "/api/v2/owners") you will need to update these paths in this file.
+  3.  ```ThreatConnect/ThreatConnect.py``` contains the actual ThreatConnect API client.  There is a variable labeled ```VERIFY``` within the ```_api_request``` function which will determine whether the Requests module will verify SSL certificates.  If you are using an invalid or self-signed certificate (which should only be for on-premise deployments) then you will want to set ```VERIFY=False``` (defaults to ```True```) otherwise the client will detect an invalid certificate and abort any requests.
   
 Instantiation
 -----
