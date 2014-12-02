@@ -49,6 +49,7 @@ class ThreatConnect(object):
         self.indicator_types = indicator_types
         self._resource_types = resource_types
         self._data_structures = data_structure_defs
+        self._verify_ssl = verify_ssl_certs
         #todo - add to config
         #todo - victims?
         self.group_types = ["adversaries", "emails", "incidents", "signatures", "threats"]  
@@ -88,7 +89,7 @@ class ThreatConnect(object):
             body_json = None
 
         # Change this if you're using a self-signed/unsigned cert (priv cloud/on prem)
-        VERIFY=True
+        VERIFY=self._verify_ssl
         if method == 'GET':
             api_response = self._rh.get(full_path, headers=api_headers, verify=VERIFY)
         elif method == 'POST':

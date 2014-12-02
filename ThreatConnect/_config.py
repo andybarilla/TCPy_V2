@@ -1,51 +1,56 @@
 import re
 
+#
+# verify SSL certs?
+#
+verify_ssl_certs = True
+
 """standard TC API values"""
 
 #
 # adversaries base uri
 #
-api_uri_adversaries = '/api/v2/groups/adversaries'
+api_uri_adversaries = '/v2/groups/adversaries'
 
 #
 # emails base uri
 #
-api_uri_emails = '/api/v2/groups/emails'
+api_uri_emails = '/v2/groups/emails'
 
 #
 # groups base uri
 #
-api_uri_groups = '/api/v2/groups'
+api_uri_groups = '/v2/groups'
 
 #
 # incidents base uri
 #
-api_uri_incidents = '/api/v2/groups/incidents'
+api_uri_incidents = '/v2/groups/incidents'
 
 #
 # indicators base uri
 #
-api_uri_indicators = '/api/v2/indicators'
+api_uri_indicators = '/v2/indicators'
 
 #
 # owners base uri
 #
-api_uri_owners = '/api/v2/owners'
+api_uri_owners = '/v2/owners'
 
 #
 # signatures base uri
 #
-api_uri_signatures = '/api/v2/groups/signatures'
+api_uri_signatures = '/v2/groups/signatures'
 
 #
 # tags base uri
 #
-api_uri_tags = '/api/v2/tags'
+api_uri_tags = '/v2/tags'
 
 #
 # threats base uri
 #
-api_uri_threats = '/api/v2/groups/threats'
+api_uri_threats = '/v2/groups/threats'
 
 #
 # default failure status
