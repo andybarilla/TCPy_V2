@@ -216,7 +216,7 @@ To: Mr Smith """
             print results.error_message_list()        
 
     # Get indicator attributes
-    if True:
+    if False:
         results = tc.get_indicator_attributes("addresses", "142.112.222.37")
         printout(results)
 
