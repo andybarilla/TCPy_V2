@@ -421,7 +421,7 @@ class ThreatConnect(object):
 
         # encode url
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         # create appropriate response object
         tr = ThreatResponse(['status'])
@@ -570,7 +570,7 @@ class ThreatConnect(object):
 
         # url-encode url indicators
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         # request uri
         request_uri = self._resource_types['indicators']['request_uri']
@@ -660,7 +660,7 @@ class ThreatConnect(object):
 
         # url
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         # build request uri
         request_uri = self._resource_types['indicators']['request_uri']
@@ -825,14 +825,14 @@ class ThreatConnect(object):
                 return tr
 
             if indicator_type == 'urls':
-                indicator = urllib.quote(indicator, safe='')
+                indicator = urllib.quote(indicator, safe='~')
 
             request_uri = self._resource_types['indicators']['request_uri']
             request_uri += "/%s" % indicator_type
             request_uri += "/%s" % indicator
             request_uri += "/attributes/%d" % int(attribute_id)
             request_uri += "/securityLabels"
-            request_uri += "/%s" % urllib.quote(securityLabel, safe='')
+            request_uri += "/%s" % urllib.quote(securityLabel, safe='~')
 
         # groups
         elif main_branch in self.group_types:
@@ -856,7 +856,7 @@ class ThreatConnect(object):
             request_uri += "/%d" % int(group_id)
             request_uri += "/attributes/%d" % int(attribute_id)
             request_uri += "/securityLabels"
-            request_uri += "/%s" % urllib.quote(securityLabel, safe='')
+            request_uri += "/%s" % urllib.quote(securityLabel, safe='~')
 
         else:
             tr = ThreatResponse([])
@@ -888,7 +888,7 @@ class ThreatConnect(object):
 
         request_uri = self._resource_types[group_type]['request_uri']
         request_uri += "/%d" % int(group_id)
-        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='')
+        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
 
@@ -910,13 +910,13 @@ class ThreatConnect(object):
         tr = ThreatResponse([])
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
 
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
         request_uri += "/%s" % indicator
-        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='')
+        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
         
@@ -939,7 +939,7 @@ class ThreatConnect(object):
 
         request_uri = self._resource_types[group_type]['request_uri']
         request_uri += "/%d" % int(group_id)
-        request_uri += "/tags/%s" % urllib.quote(tag, safe='')
+        request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
         
@@ -961,13 +961,13 @@ class ThreatConnect(object):
         tr = ThreatResponse(['status'])
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
 
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
         request_uri += "/%s" % indicator
-        request_uri += "/tags/%s" % urllib.quote(tag, safe='')
+        request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
         
@@ -995,7 +995,7 @@ class ThreatConnect(object):
 
         # encode url
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         tr = ThreatResponse(['status'])
 
@@ -1405,7 +1405,7 @@ class ThreatConnect(object):
         tr = ThreatResponse(data_structure)
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
         
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
@@ -1506,7 +1506,7 @@ class ThreatConnect(object):
         tr = ThreatResponse([])
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
@@ -1575,14 +1575,14 @@ class ThreatConnect(object):
                 return tr
 
             if indicator_type == 'urls':
-                indicator = urllib.quote(indicator, safe='')
+                indicator = urllib.quote(indicator, safe='~')
 
             request_uri = self._resource_types['indicators']['request_uri']
             request_uri += "/%s" % indicator_type
             request_uri += "/%s" % indicator
             request_uri += "/attributes/%d" % int(attribute_id)
             request_uri += "/securityLabels"
-            request_uri += "/%s" % urllib.quote(securityLabel, safe='')
+            request_uri += "/%s" % urllib.quote(securityLabel, safe='~')
 
         # groups
         elif main_branch in self.group_types:
@@ -1606,7 +1606,7 @@ class ThreatConnect(object):
             request_uri += "/%d" % int(group_id)
             request_uri += "/attributes/%d" % int(attribute_id)
             request_uri += "/securityLabels"
-            request_uri += "/%s" % urllib.quote(securityLabel, safe='')
+            request_uri += "/%s" % urllib.quote(securityLabel, safe='~')
 
         else:
             tr = ThreatResponse([])
@@ -1636,7 +1636,7 @@ class ThreatConnect(object):
 
         request_uri = self._resource_types[group_type]['request_uri']
         request_uri += "/%d" % int(group_id)
-        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='')
+        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
 
@@ -1658,13 +1658,13 @@ class ThreatConnect(object):
         tr = ThreatResponse([])
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
 
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
         request_uri += "/%s" % indicator
-        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='')
+        request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
 
@@ -1687,7 +1687,7 @@ class ThreatConnect(object):
 
         request_uri = self._resource_types[group_type]['request_uri']
         request_uri += "/%d" % int(group_id)
-        request_uri += "/tags/%s" % urllib.quote(tag, safe='')
+        request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
     
@@ -1709,13 +1709,13 @@ class ThreatConnect(object):
         tr = ThreatResponse([])
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
 
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
         request_uri += "/%s" % indicator
-        request_uri += "/tags/%s" % urllib.quote(tag, safe='')
+        request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
         
@@ -1767,7 +1767,7 @@ class ThreatConnect(object):
 
         # encode url
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         tr = ThreatResponse([])
 
@@ -1944,7 +1944,7 @@ class ThreatConnect(object):
             return tr
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         data_structure = ['dateAdded', 'id', 'type', 'value', 'lastModified', 'displayed']
         tr = ThreatResponse(data_structure)
@@ -2150,7 +2150,7 @@ class ThreatConnect(object):
 
         # url
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         data_structures = {
             'addresses': [
@@ -2455,7 +2455,7 @@ class ThreatConnect(object):
                 return tr
 
             if indicator_type == 'urls':
-                indicator = urllib.quote(indicator, safe='')
+                indicator = urllib.quote(indicator, safe='~')
 
             request_uri = self._resource_types['indicators']['request_uri']
             request_uri += "/%s" % indicator_type
@@ -3040,7 +3040,7 @@ class ThreatConnect(object):
             body['displayed'] = displayed
 
         if indicator_type == 'urls':
-            indicator = urllib.quote(indicator, safe='')
+            indicator = urllib.quote(indicator, safe='~')
 
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
