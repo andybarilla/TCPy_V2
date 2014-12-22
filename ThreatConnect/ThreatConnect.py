@@ -50,6 +50,10 @@ class ThreatConnect(object):
         self._resource_types = resource_types
         self._data_structures = data_structure_defs
         self._verify_ssl = verify_ssl_certs
+
+        if not self._verify_ssl:
+            requests.packages.urllib3.disable_warnings()
+
         #todo - add to config
         #todo - victims?
         self.group_types = ["adversaries", "emails", "incidents", "signatures", "threats"]  
