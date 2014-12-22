@@ -3148,8 +3148,7 @@ class ThreatResponse(object):
                     cleanName = dat[filter['name']].replace("'", "\'")
                     cleanVal = filter['value'].replace("'", "")
 
-                    myexpression = "'%s' %s '%s'" % \                                   
-                        (cleanName, filter['expression'], cleanVal)
+                    myexpression = "'%s' %s '%s'" % (cleanName, filter['expression'], cleanVal)
                     
                     if not eval(myexpression):
                         add_data = False
