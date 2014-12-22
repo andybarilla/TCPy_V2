@@ -3145,8 +3145,12 @@ class ThreatResponse(object):
                         add_data = False
                         break
                 elif filter['name'] in dat.keys():
-                    myexpression = "'%s' %s '%s'" % \
-                                   (dat[filter['name']], filter['expression'], filter['value'])
+                    cleanName = dat[filter['name']].replace("'", "\'")
+                    cleanVal = filter['value'].replace("'", "")
+
+                    myexpression = "'%s' %s '%s'" % \                                   
+                        (cleanName, filter['expression'], cleanVal)
+                    
                     if not eval(myexpression):
                         add_data = False
                         break
