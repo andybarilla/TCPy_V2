@@ -682,9 +682,12 @@ class ThreatConnect(object):
         # special case for owners
         if resource_type == "owners":
             return self._api_response(tr, request_uri)
-        # All others get owners call
-        return self._api_response_owners(tr, request_uri, owners)
-        
+        # special case for securityLabels
+        if resource_type == "securityLabels":  
+            return self._api_response_owners(tr, request_uri, owners)
+        else:
+            return self._api_response_pagination(tr, request_uri, owners)
+
     def _get_resource_by_tag(self, tr, resource_type, tag_name, owners=None):
         """Get resource by tag from ThreatConnect API.
 
@@ -723,7 +726,7 @@ class ThreatConnect(object):
             request_uri += "/groups"
         request_uri += "/%s" % resource_type
 
-        return self._api_response_owners(tr, request_uri, owners)
+        return self._api_response_pagination(tr, request_uri, owners)
 
     def _validate_indicator(self, indicator):
         """Validate the indicator.
