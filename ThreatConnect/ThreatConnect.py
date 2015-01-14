@@ -85,13 +85,23 @@ class ThreatConnect(object):
 
         """
 
+        # Decide whether or not to suppress all activity logs
+        # todo - make this a configuration option (or function arg?)
+        SUPPRESS = False
+        if SUPPRESS:
+            if '?' in request_uri:
+                request_uri += "&createActivityLog=false"
+            else:
+                request_uri += "?createActivityLog=false"
+
+
         api_headers = self._generate_headers(method, request_uri)
         full_path = '%s%s' % (self._api_url, request_uri)
         if body or body is not None:
             body_json = json.dumps(body)
         else:
             body_json = None
-
+        
         # Change this if you're using a self-signed/unsigned cert (priv cloud/on prem)
         VERIFY=self._verify_ssl
         if method == 'GET':
@@ -105,11 +115,12 @@ class ThreatConnect(object):
         elif method == 'DELETE':
             api_response = self._rh.delete(full_path, headers=api_headers, verify=VERIFY)
 
-
-
-        api_response.encoding = 'utf-8'
-        api_response_json = json.dumps(api_response.json())
-        api_response_dict = json.loads(api_response_json)
+        try:
+            api_response.encoding = 'utf-8'
+            api_response_json = json.dumps(api_response.json())
+            api_response_dict = json.loads(api_response_json)
+        except:
+            api_response_dict = {'status' : 'Failure', 'message' : 'Error code %d' % api_response.status_code}
 
         return api_response_dict
 
@@ -438,7 +449,7 @@ class ThreatConnect(object):
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
     
     def _validate_rating(self, rating):
-        if rating in ["1.0", "2.0", "3.0", "4.0", "5.0"]:
+        if rating in ["1.0", "2.0", "3.0", "4.0", "5.0", 0, 1, 2, 3, 4, 5]:
             return True
 
         #todo - make this a bit more robust, 0?
@@ -925,6 +936,9 @@ class ThreatConnect(object):
         return self._api_response_owners(tr, request_uri, owners, method="POST")
         
     def add_tag_to_group(self, group_type, group_id, tag, owners=None):
+        if len(tag) > 35:
+            tag = tag[:35]
+
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
             tr = ThreatResponse([])
@@ -948,6 +962,9 @@ class ThreatConnect(object):
         return self._api_response_owners(tr, request_uri, owners, method="POST")
         
     def add_tag_to_indicator(self, indicator_type, indicator, tag, owners=None):
+        if len(tag) > 85:
+            tag = tag[:35]
+
         # validate indicator type
         if not self._validate_indicator_type(indicator_type):
             tr = ThreatResponse([])
@@ -3152,8 +3169,8 @@ class ThreatResponse(object):
                         add_data = False
                         break
                 elif filter['name'] in dat.keys():
-                    cleanName = dat[filter['name']].replace("'", "")
-                    cleanVal = filter['value'].replace("'", "")
+                    cleanName = str(dat[filter['name']]).replace("'", "")
+                    cleanVal = str(filter['value']).replace("'", "")
 
                     myexpression = "'%s' %s '%s'" % (cleanName, filter['expression'], cleanVal)
                     
