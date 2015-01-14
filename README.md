@@ -5,7 +5,7 @@ TCPy_V2 is a Python implementation of the ThreatConnect V2 API.  It will allow y
 
 Requirements
 ------
-The ThreatConnectPythonClient requires Python 2.7, and the [Requests module](http://docs.python-requests.org/en/latest/).  It will also require a set of API credentials with a ThreatConnect instance.
+The ThreatConnectPythonClient requires Python 2.6, and the [Requests module](http://docs.python-requests.org/en/latest/).  It will also require a set of API credentials with a ThreatConnect instance.  Please note that there are bug fixes in the Request module as of December 2014 that will affect proxy usage, so you will want to make sure you're using at least version 2.5.1 of Requests.
 
 Configuration
 -----
