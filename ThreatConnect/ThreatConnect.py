@@ -56,7 +56,7 @@ class ThreatConnect(object):
 
         #todo - add to config
         #todo - victims?
-        self.group_types = ["adversaries", "emails", "incidents", "signatures", "threats"]  
+        self.group_types = ["adversaries", "emails", "incidents", "signatures", "threats", "documents"]  
         
         # error messaging
         self._failure_status = failure_status
@@ -87,7 +87,7 @@ class ThreatConnect(object):
 
         # Decide whether or not to suppress all activity logs
         # todo - make this a configuration option (or function arg?)
-        SUPPRESS = False
+        SUPPRESS = True
         if SUPPRESS:
             if '?' in request_uri:
                 request_uri += "&createActivityLog=false"
@@ -115,6 +115,11 @@ class ThreatConnect(object):
         elif method == 'DELETE':
             api_response = self._rh.delete(full_path, headers=api_headers, verify=VERIFY)
 
+        if "/signatures/" in request_uri and "/download" in request_uri and api_response.status_code == 200:
+            return  {'status' : 'Success', 'data' : {'signatureDownload' : api_response.text}}
+        elif "/signatures/" in request_uri and "/download" in request_uri and api_response.status_code != 200:
+            return  {'status' : 'Failure', 'message' : 'Error code %d' % api_response.status_code}
+            
         try:
             api_response.encoding = 'utf-8'
             api_response_json = json.dumps(api_response.json())
@@ -186,7 +191,7 @@ class ThreatConnect(object):
         for owner in owners:
 
             # uri data
-            owner = "owner=%s" % owner.replace(" ", "%20")
+            owner = "owner=%s" %  urllib.quote(owner, safe='~')
 
             # update request_uri with owner
             owner_request_uri = request_uri
@@ -249,7 +254,7 @@ class ThreatConnect(object):
             remaining_count = (limit_count + 1)
 
             # uri data
-            owner = "owner=%s" % owner.replace(" ", "%20")
+            owner = "owner=%s" % urllib.quote(owner, safe='~')
 
             # update api_uri with owner
             owner_request_uri = request_uri
@@ -880,7 +885,7 @@ class ThreatConnect(object):
             return tr
 
         tr = ThreatResponse(self._data_structures['securityLabels'])
-        print request_uri
+        
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
         
@@ -1166,7 +1171,7 @@ class ThreatConnect(object):
         
         return self._api_response_owners(tr, request_uri, owners=owners, method="POST", body=body)
 
-    def create_host(self, host, rating=None, confidence=None, owners=None):
+    def create_host(self, host, rating=None, confidence=None, dnsActive=None, whoisActive=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -1188,6 +1193,12 @@ class ThreatConnect(object):
 
         if rating is not None:
             body['rating'] = rating
+            
+        if dnsActive is not None:
+            body['dnsActive'] = dnsActive
+            
+        if whoisActive is not None:
+            body['whoisActive'] = whoisActive
 
         return self._create_indicator("hosts", body, owners)
 
@@ -1948,6 +1959,25 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "emails"
         return self._get_resource_by_tag(tr, resource_type, tag_name, owners)
+        
+    def get_fileOccurrences(self, hash, owners=None):
+        # validate indicator 
+        if not self._validate_indicator(hash):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message(self._bad_indicator)
+            return tr
+            
+        data_structure = ['fileName', 'path', 'id', 'date']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        
+        request_uri = self._resource_types['indicators']['request_uri']
+        request_uri += "/files"
+        request_uri += "/%s" % hash
+        request_uri += "/fileOccurrences"
+        
+        return self._api_response_owners(tr, request_uri, owners=owners)
 
     def get_indicator_attributes(self, indicator_type, indicator, owners=None):
         # indicator type
@@ -1957,7 +1987,7 @@ class ThreatConnect(object):
             tr.add_error_message(self._bad_indicator_type)
             return tr
 
-        # validate indicator for non-files
+        # validate indicator 
         if not self._validate_indicator(indicator):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -2029,6 +2059,29 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "groups"
         return self._get_resource(tr, resource_type, owners)
+        
+    def get_groups_by_group(self, group_id, group_type, owners=None):
+        """Get all the groups associated with a provided group:
+        
+        /v2/groups/<group type>/<group id>/groups
+        
+        Args:
+            group_id: (string) the string ID of the group
+            group_type: (string) the type of the group (incidents, threats, etc.)
+        
+        """
+        
+        
+        data_structure = ['dateAdded', 'id', 'name', 'ownerName', 'type', 'webLink']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        
+        request_uri = self._resource_types['groups']['request_uri']
+        request_uri += "/%s" % group_type
+        request_uri += "/%s" % group_id
+        request_uri += "/groups"
+
+        return self._api_response_pagination(tr, request_uri, owners)
 
     def get_groups_by_indicator(self, indicator, indicator_type=None, owners=None):
         """Get all emails by indicator.
@@ -3143,6 +3196,7 @@ class ThreatResponse(object):
             'indicator': IndicatorData,
             'owner': OwnerData,
             'securityLabel' : SecurityLabelData,
+            'signatureDownload' : SignatureDownload,
             'signature': SignatureData,
             'tag': TagData,
             'threat': ThreatData,
@@ -3697,6 +3751,38 @@ class SecurityLabelData(ResultData):
         self._data = []
 
 class SignatureData(ResultData):
+    """Signature Data
+
+    * single result structure
+    u'signature': {
+        u'dateAdded': u'2014-07-24T21:25:35Z',
+        u'fileName': u'20131217B.yara',
+        u'fileType': u'YARA',
+        u'id': 86086,
+        u'name': u'Ash_Yara',
+        u'owner': {
+            u'id': 1626,
+            u'name': u'Test Community',
+            u'type': u'Community'},
+        u'webLink': u'https://app.threatconnect.com/tc/auth/signature/
+            signature.xhtml?signature=86086'}
+
+    * multiple result structure
+    u'signature': [{
+        u'dateAdded': u'2013-12-08T20:43:31Z',
+        u'fileType': u'YARA',
+        u'id': 46350,
+        u'name': u'APT1_hkcmd_SMAgent',
+        u'ownerName': u'Acme Corp',
+        u'webLink': u'https://app.threatconnect.com/tc/auth/signature/
+            signature.xhtml?signature=46350'},
+    """
+
+    def __init__(self, data_structure):
+        ResultData.__init__(self, data_structure)
+        self._data = []
+        
+class SignatureDownload(ResultData):
     """Signature Data
 
     * single result structure

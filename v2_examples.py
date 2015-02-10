@@ -158,8 +158,10 @@ To: Mr Smith """
     if False:
         host = "testhost-%d-%d.net" % (randint(1,1000), randint(1,1000))
         results = tc.create_host(host)
-        tag_name = "test indicator tag"
+        tag_name = "CSIT-14123|IntelNews/NEWS-081520141425"
         results = tc.add_tag_to_indicator("hosts", host, tag_name)
+        print results.status()
+        print results.error_message_list()
 
     # Add tag to group
     if False:
@@ -551,8 +553,24 @@ To: Mr Smith """
         else:
             print results.error_message_list()
         
+    # retrieve file occurrences
+    if False:
+        md5 = '84FA976D9ED693668B3F97D991DA0E97'
+        results = tc.get_fileOccurrences(md5)
+        
+        print len(results.data().data())
+        for p in results.data().data():
+            print p['fileName']
+            
+    # retrieve group:group
+    if True:
+        sig_id = '132117'
+        results = tc.get_groups_by_group(sig_id, 'signatures')
+        
+        for p in results.data().data():
+            print p
 
-
+        
 # Easy printout for diagnostics
 def printout(results):
     # Request Status (string)
