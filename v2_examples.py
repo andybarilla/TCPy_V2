@@ -563,12 +563,56 @@ To: Mr Smith """
             print p['fileName']
             
     # retrieve group:group
-    if True:
+    if False:
         sig_id = '132117'
         results = tc.get_groups_by_group(sig_id, 'signatures')
         
         for p in results.data().data():
             print p
+            
+    # Read victims
+    if False:
+        results = tc.get_victims()
+        for p in results.data().data():
+            
+            print p
+        
+        # replace with relevant ones from your org        
+        indicator = "www.googleserver.biz"
+        results = tc.get_victims_by_indicator(indicator)
+        for p in results.data().data():
+            
+            print p
+            
+        # replace with relevant ones from your org
+        results = tc.get_victims_by_group('incidents', '132112')
+        for p in results.data().data():
+            
+            print p
+            
+        results = tc.get_victim_by_id('543')
+        for p in results.data().data():
+            print p
+            
+    # Read victimAssets
+    if False:
+        # replace with relevant ones from your org
+        vic_id = '543'
+        results = tc.get_victimAssets(vic_id)
+        for p in results.data().data():
+            print p
+        
+        results = tc.get_victimEmailAddresses(vic_id)
+        for p in results.data().data():
+            print p
+            
+    # Create victim + assets
+    if True:
+        results = tc.create_victim("Autovictim", org="My Company", suborg="HR", workLocation="Seattle", createIfExists=False)
+        newVic = results.single_result()
+        
+        results = tc.create_victimEmailAddress(newVic['id'], 'sample@address.net', addressType='personal')
+        print results.status()
 
         
 # Easy printout for diagnostics

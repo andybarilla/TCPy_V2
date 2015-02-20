@@ -1400,6 +1400,59 @@ class ThreatConnect(object):
         body = {'name' : name}
 
         return self._create_group("threats", body=body, owners=owners)
+        
+    def create_victim(self, name, org=None, suborg=None, workLocation=None, nationality=None, createIfExists=True, owners=None):
+        if not name or name is None:
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message("Name is required")   #todo appropriate error
+            return tr
+            
+        # user might not want to create duplicate victims if they exist
+        if not createIfExists:
+            self.add_filter('name', '==', name)
+            results = self.get_victims(owners=owners)
+            self.reset_filter()
+            if results.single_result() is not None:
+                return results
+                
+        body = {'name' : name}
+        if org is not None:
+            body['org'] = org
+        if suborg is not None:
+            body['suborg'] = suborg
+        if workLocation is not None:
+            body['workLocation'] = workLocation
+        if nationality is not None:
+            body['nationality'] = nationality
+        
+        tr = ThreatResponse(self._data_structures['victims'])
+
+        request_uri = self._resource_types['victims']['request_uri']
+        
+        return self._api_response_owners(tr, request_uri, owners, method="POST", body=body)
+        
+    def create_victimEmailAddress(self, victim_id, emailAddress, addressType=None, createIfExists=False, owners=None):
+        if not createIfExists:
+            self.add_filter('address', '==', emailAddress)
+            results = self.get_victimEmailAddresses(victim_id)
+            self.reset_filter()
+            if results.single_result() is not None:
+                return results
+                
+        body = {'address' : emailAddress}
+        if addressType is not None:
+            body['addressType'] = addressType
+
+        data_structure = ['id', 'type', 'webLink', 'address', 'addressType']
+        tr = ThreatResponse(data_structure)
+        
+        request_uri = self._resource_types['victims']['request_uri']
+        request_uri += "/%s" % str(victim_id)
+        request_uri += "/victimAssets"
+        request_uri += "/emailAddresses"
+            
+        return self._api_response_owners(tr, request_uri, owners, method="POST", body=body)
 
     def create_indicator_attribute(self, indicator_type, indicator, attribute_type, attribute_value, createIfExists=True, displayed=False, owners=None):
         # indicator type
@@ -2866,6 +2919,114 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "threats"
         return self._get_resource_by_tag(tr, resource_type, tag_name, owners)
+        
+        
+    def get_victims(self, owners=None):
+        """Get all victims.
+
+        /v2/victims?owner=<owner>
+
+        Args:
+            owners: (list) List of owners to request threat data.
+
+        Returns:
+            Threat Response object.
+        """
+        data_structure = ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        resource_type = "victims"
+        return self._get_resource(tr, resource_type, owners)
+        
+    def get_victim_by_id(self, resource_id):
+        """Get victim by specified id
+
+        /v2/victims/<ID>?owner=<owner>
+
+        Args:
+            ID: the id of this victim to retrieve
+            owners: (list) List of owners to request threat data.
+
+        Returns:
+            Threat Response object.
+        """
+        data_structure = ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        resource_type = "victims"
+        return self._get_resource_by_id(tr, resource_type, resource_id)
+        
+    def get_victims_by_group(self, group_type, group_id, owners=None):
+        """Get victims by group.
+
+        /v2/groups/<group type>/<group id>/victims?owner=<owner>
+        
+        Args:
+            group_type: (string) The predefined group type.
+            group_id: (string) The ThreatConnect group ID.
+            owners: (list) List of owners to request threat data.
+
+        Returns:
+            Threat Response object.
+        """
+        # set owner to default org
+        if owners is None or not owners:
+            owners = [self._api_org]
+
+        data_structure = ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink']
+
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+
+        # build request uri
+        request_uri = self._resource_types['groups']['request_uri']
+        request_uri += "/%s" % group_type.replace(" ", "%20")
+        request_uri += "/%s" % group_id
+        request_uri += "/victims"
+
+        return self._api_response_pagination(tr, request_uri, owners)
+    
+    def get_victims_by_indicator(self, indicator, indicator_type=None, owners=None):
+        """Get all victims by indicator.
+
+        /v2/indicators/<indicator type>/<indicator>/victims?owner=<owner>
+
+        Args:
+            indicator: (string) The user provided indicator.
+            indicator_type: (string) The indicator type.
+            owners: (list) List of owners to request threat data.
+
+        Returns:
+            Threat Response object.
+        """
+        data_structure = ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        resource_type = "victims"
+        return self._get_resource_by_indicator(tr, resource_type, indicator, indicator_type, owners)
+        
+        
+    def get_victimAssets(self, victimId):
+        data_structure = ['id', 'name', 'type', 'webLink']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        
+        request_uri = self._resource_types['victims']['request_uri']
+        request_uri += "/%s" % victimId
+        request_uri += "/victimAssets"
+        
+        return self._api_response_pagination(tr, request_uri)
+        
+    def get_victimEmailAddresses(self, victimId):
+        data_structure = ['id', 'type', 'webLink', 'address', 'addressType']
+        tr = ThreatResponse(data_structure)
+        tr.add_filter(self._data_filter)
+        
+        request_uri = self._resource_types['victims']['request_uri']
+        request_uri += "/%s" % victimId
+        request_uri += "/victimAssets/emailAddresses"
+        
+        return self._api_response_pagination(tr, request_uri)
 
     def set_max_results(self, max_results):
         """Set max results for API pagination request.
@@ -3200,7 +3361,10 @@ class ThreatResponse(object):
             'signature': SignatureData,
             'tag': TagData,
             'threat': ThreatData,
-            'url': UrlIndicatorData}
+            'url': UrlIndicatorData,
+            'victim' : VictimData,
+            'victimAsset' : VictimAssetData,
+            'victimEmailAddress' : VictimEmailAddressData}
         self._error_message_list = []
         self._filters = None
         self._max_results = 0
@@ -3859,6 +4023,50 @@ class ThreatData(ResultData):
         self._data = []
 
 
+class VictimData(ResultData):
+    """Victim Data
+         "victim" : {
+          "id" : 543,
+          "name" : "Jon Q Doe",
+          "org" : "Payroll",
+          "suborg" : "Disbursements",
+          "workLocation" : "Seattle, WA",
+          "nationality" : "American",
+          "webLink" : "https://app.threatconnect.com/tc/auth/victim/victim.xhtml?victim=543"
+        }
+    """
+    def __init__(self, data_structure):
+        ResultData.__init__(self, data_structure)
+        self._data = []
+        
+class VictimAssetData(ResultData):
+    """VictimAsset Data
+     "victimAsset" : [ {
+          "id" : 739,
+          "name" : "johnqdoe@viccorp.org",
+          "type" : "EmailAddress",
+          "webLink" : "https://app.threatconnect.com/tc/auth/victim/victim.xhtml?victim=543"
+        }, 
+    """
+    def __init__(self, data_structure):
+        ResultData.__init__(self, data_structure)
+        self._data = []
+        
+class VictimEmailAddressData(ResultData):
+    """VictimAsset Data
+     "victimEmailAddress" : {
+          "id" : 739,
+          "type" : "EmailAddress",
+          "webLink" : "https://app.threatconnect.com/tc/auth/victim/victim.xhtml?victim=543",
+          "address" : "johnqdoe@viccorp.org",
+          "addressType" : "work"
+        }
+
+    """
+    def __init__(self, data_structure):
+        ResultData.__init__(self, data_structure)
+        self._data = []
+        
 class IndicatorData(ResultData):
     """Indicator Data
 

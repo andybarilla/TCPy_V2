@@ -53,6 +53,11 @@ api_uri_tags = '/v2/tags'
 api_uri_threats = '/v2/groups/threats'
 
 #
+# victims base uri
+#
+api_uri_victims = '/v2/victims'
+
+#
 # default failure status
 #
 failure_status = 'Failure'
@@ -201,7 +206,9 @@ data_structure_defs = {
              'signatures' : ['dateAdded', 'fileName', 'fileType', 'id', 'name', 'owner', 'webLink'],
              'threats' : ['dateAdded', 'id', 'name', 'ownerName', 'webLink'],
              'securityLabels' : ['name', 'description', 'dateAdded'],
-             'tags' : ['name', 'webLink']
+             'tags' : ['name', 'webLink'],
+             'victims' : ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink'],
+             'victimAssets' : ['id', 'name', 'type', 'webLink']
              }
 
 #
@@ -229,4 +236,7 @@ resource_types = {
     'tags': {
         'request_uri': api_uri_tags},
     'threats': {
-        'request_uri': api_uri_threats}}
+        'request_uri': api_uri_threats},
+    'victims':{
+        'request_uri': api_uri_victims}
+    }
