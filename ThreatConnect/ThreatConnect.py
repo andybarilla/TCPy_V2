@@ -56,8 +56,8 @@ class ThreatConnect(object):
 
         #todo - add to config
         #todo - victims?
-        self.group_types = ["adversaries", "emails", "incidents", "signatures", "threats", "documents"]  
-        
+        self.group_types = ["adversaries", "emails", "incidents", "signatures", "threats", "documents"]
+
         # error messaging
         self._failure_status = failure_status
         self._bad_indicator = bad_indicator
@@ -101,7 +101,7 @@ class ThreatConnect(object):
             body_json = json.dumps(body)
         else:
             body_json = None
-        
+
         # Change this if you're using a self-signed/unsigned cert (priv cloud/on prem)
         VERIFY=self._verify_ssl
         if method == 'GET':
@@ -119,7 +119,7 @@ class ThreatConnect(object):
             return  {'status' : 'Success', 'data' : {'signatureDownload' : api_response.text}}
         elif "/signatures/" in request_uri and "/download" in request_uri and api_response.status_code != 200:
             return  {'status' : 'Failure', 'message' : 'Error code %d' % api_response.status_code}
-            
+
         try:
             api_response.encoding = 'utf-8'
             api_response_json = json.dumps(api_response.json())
@@ -326,13 +326,13 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_indicator_type)
             return tr
-       
+
         # validate indicator for non-files
         if indicator_type != 'files':
             indicator = body[self.indicator_types[indicator_type]['keys'][0]]
             if not self._validate_indicator(indicator):
                 tr = ThreatResponse([])
-                tr.add_request_status(self._failure_status)   
+                tr.add_request_status(self._failure_status)
                 tr.add_error_message(self._bad_indicator)
                 return tr
 
@@ -367,7 +367,6 @@ class ThreatConnect(object):
 
         return self._api_response_owners(tr, request_uri, owners, method="POST", body=body)
 
-
     def _create_group(self, group_type, body=None, owners=None):
         # validate group type
         if group_type not in self.group_types:
@@ -385,7 +384,7 @@ class ThreatConnect(object):
             'emails' : ['name', 'subject', 'header', 'body'],
             'signatures' : ['name', 'fileName', 'fileType', 'fileText']
         }
-        
+
         # all required fields as defined above must be in body
         if not all(k in body for k in required_fields[group_type]):
             tr = ThreatResponse([])
@@ -397,9 +396,9 @@ class ThreatConnect(object):
         tr = ThreatResponse(self._data_structures[group_type])
 
         request_uri = self._resource_types[group_type]['request_uri']
-        
+
         return self._api_response_owners(tr, request_uri, owners, method="POST", body=body)
-        
+
     def _delete_group(self, group_type, group_id, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -423,7 +422,7 @@ class ThreatConnect(object):
         request_uri += "/%d" % group_id
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
-    
+
     def _delete_indicator(self, indicator_type, indicator, owners=None):
         # indicator type
         if not self._validate_indicator_type(indicator_type):
@@ -452,7 +451,7 @@ class ThreatConnect(object):
         request_uri += "/%s" % indicator
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
-    
+
     def _validate_rating(self, rating):
         if rating in ["1.0", "2.0", "3.0", "4.0", "5.0", 0, 1, 2, 3, 4, 5]:
             return True
@@ -466,7 +465,7 @@ class ThreatConnect(object):
 
         #todo - 0?
         return confidence in range(1,101)
-    
+
     def _generate_headers(self, request_method, api_uri):
         """Generate HTTP headers for API request.
 
@@ -569,7 +568,7 @@ class ThreatConnect(object):
 
         # get results
         return self._api_response(tr, request_uri)
-        
+
     def _update_indicator(self, indicator_type, indicator, body, owners=None):
         # indicator type
         if not self._validate_indicator_type(indicator_type):
@@ -621,11 +620,6 @@ class ThreatConnect(object):
 
         return self._api_response_owners(tr, request_uri, owners, method="PUT", body=body)
 
-    
-        
-    
-        
-    
     def _get_resource_by_indicator(self, tr, resource_type, indicator, indicator_type, owners=None):
         """Get resource by indicator from ThreatConnect API
 
@@ -699,7 +693,7 @@ class ThreatConnect(object):
         if resource_type == "owners":
             return self._api_response(tr, request_uri)
         # special case for securityLabels
-        if resource_type == "securityLabels":  
+        if resource_type == "securityLabels":
             return self._api_response_owners(tr, request_uri, owners)
         else:
             return self._api_response_pagination(tr, request_uri, owners)
@@ -816,7 +810,7 @@ class ThreatConnect(object):
         """Reset filter to threat data"""
 
         self._data_filter = []
-        
+
     def add_securityLabel_to_attribute(self, main_branch, main_val, attribute_id, securityLabel, owners=None):
         # validate attribute id
         if not isinstance(int(attribute_id), int):
@@ -885,10 +879,10 @@ class ThreatConnect(object):
             return tr
 
         tr = ThreatResponse(self._data_structures['securityLabels'])
-        
+
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
-        
+
     def add_securityLabel_to_group(self, group_type, group_id, securityLabel, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -939,7 +933,7 @@ class ThreatConnect(object):
         request_uri += "/securityLabels/%s" % urllib.quote(securityLabel, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
-        
+
     def add_tag_to_group(self, group_type, group_id, tag, owners=None):
         if len(tag) > 35:
             tag = tag[:35]
@@ -965,7 +959,7 @@ class ThreatConnect(object):
         request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
-        
+
     def add_tag_to_indicator(self, indicator_type, indicator, tag, owners=None):
         if len(tag) > 85:
             tag = tag[:35]
@@ -996,7 +990,7 @@ class ThreatConnect(object):
         request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
-        
+
     def associate_group_to_indicator(self, group_type, group_id, indicator_type, indicator, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1031,6 +1025,29 @@ class ThreatConnect(object):
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
 
+    def associate_group_to_victim(self, group_type, group_id, victim_id, owners=None):
+        # validate group type
+        if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message(self._bad_group_type)   #todo make this configurable
+            return tr
+
+        # validate victim_id
+        if not self._validate_integer(victim_id):
+            tr = ThreatResponse([])
+            tr.add_request_status(self._failure_status)
+            tr.add_error_message(self._bad_victim_id)
+            return tr
+
+        tr = ThreatResponse(['status'])
+
+        request_uri = self._resource_types[group_type]['request_uri']
+        request_uri += "/%s" % group_id
+        # /v2/groups/incidents/<INC ID>/victims/<VIC ID>
+        request_uri += "/victims/%s" % victim_id
+        return self._api_response_owners(tr, request_uri, owners, method="POST")
+
     def associate_group_to_group(self, from_group_type, from_group_id, to_group_type, to_group_id, owners=None):
         # validate group type
         if from_group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1054,15 +1071,15 @@ class ThreatConnect(object):
         request_uri += "/%d" % int(to_group_id)
 
         return self._api_response_owners(tr, request_uri, owners, method="POST")
-    
+
     def associate_indicator_to_group(self, indicator_type, indicator, group_type, group_id, owners=None):
         return self.associate_group_to_indicator(group_type, group_id, indicator_type, indicator, owners)
-        
+
     def create_address(self, ip, rating=None, confidence=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
-            tr.add_error_message(self._bad_rating)       
+            tr.add_error_message(self._bad_rating)
             return tr
 
         if confidence is not None and not self._validate_confidence(confidence):
@@ -1074,7 +1091,7 @@ class ThreatConnect(object):
         body = {}
         key = self.indicator_types['addresses']['keys'][0]
         body[key] = ip
-        
+
         if confidence is not None:
             body['confidence'] = confidence
 
@@ -1087,19 +1104,19 @@ class ThreatConnect(object):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
-            tr.add_error_message(self._bad_rating)      
+            tr.add_error_message(self._bad_rating)
             return tr
 
         if confidence is not None and not self._validate_confidence(confidence):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
-            tr.add_error_message(self._bad_confidence) 
+            tr.add_error_message(self._bad_confidence)
             return tr
 
-        body = {} 
+        body = {}
         key = self.indicator_types['emailAddresses']['keys'][0]
         body[key] = email
-             
+
         if confidence is not None:
             body['confidence'] = confidence
 
@@ -1107,20 +1124,20 @@ class ThreatConnect(object):
             body['rating'] = rating
 
         return self._create_indicator("emailAddresses", body, owners)
-        
+
     def create_file(self, hashes, rating=None, confidence=None, size=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_rating)
             return tr
-            
+
         if confidence is not None and not self._validate_confidence(confidence):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_confidence)
             return tr
-            
+
         if size is not None and not isinstance(size, int):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -1130,30 +1147,30 @@ class ThreatConnect(object):
         body = {}
         for h in hashes:
             body[h] = hashes[h]
-            
+
         if confidence is not None:
             body['confidence'] = confidence
 
         if rating is not None:
             body['rating'] = rating
-            
+
         if size is not None:
             body['size'] = size
-            
-            
+
+
 
         return self._create_indicator("files", body, owners)
-        
+
     def create_fileOccurrence(self, hash, fileName=None, path=None, date=None, owners=None):
         # validate indicator
         if not self._validate_indicator(hash):
             tr = ThreatResponse([])
-            tr.add_request_status(self._failure_status)    
+            tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_indicator)
             return tr
-        
+
         #todo validate date
-        
+
         body = {}
         if fileName is not None:
             body['fileName'] = fileName
@@ -1161,21 +1178,21 @@ class ThreatConnect(object):
             body['path'] = path
         if date is not None:
             body['date'] = date
-            
+
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/files"
         request_uri += "/%s" % hash
         request_uri += "/fileOccurrences"
-        
+
         tr = ThreatResponse(['id', 'fileName', 'path', 'date'])
-        
+
         return self._api_response_owners(tr, request_uri, owners=owners, method="POST", body=body)
 
     def create_host(self, host, rating=None, confidence=None, dnsActive=None, whoisActive=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
-            tr.add_error_message(self._bad_rating) 
+            tr.add_error_message(self._bad_rating)
             return tr
 
         if confidence is not None and not self._validate_confidence(confidence):
@@ -1193,10 +1210,10 @@ class ThreatConnect(object):
 
         if rating is not None:
             body['rating'] = rating
-            
+
         if dnsActive is not None:
             body['dnsActive'] = dnsActive
-            
+
         if whoisActive is not None:
             body['whoisActive'] = whoisActive
 
@@ -1233,7 +1250,7 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_group_type)   #todo appropriate error
             return tr
-        
+
         # required fields when creating groups
         # todo - make this conf-accessible?
         required_fields = {
@@ -1286,7 +1303,7 @@ class ThreatConnect(object):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_group_type)   #todo appropriate error
-            return tr 
+            return tr
 
         # user might not want to create duplicate threats if they exist
         if not createIfExists:
@@ -1309,7 +1326,7 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_group_type)   #todo appropriate error
             return tr
-        
+
         #todo - validate date?
 
         # required fields when creating groups
@@ -1340,7 +1357,7 @@ class ThreatConnect(object):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_group_type)   #todo appropriate error
-            return tr        
+            return tr
 
         if not fileName or fileName is None:
             tr = ThreatResponse([])
@@ -1367,9 +1384,9 @@ class ThreatConnect(object):
             self.reset_filter()
             if results.single_result() is not None:
                 return results
-    
+
         body = {'name':name, 'fileName':fileName, 'fileType':fileType, 'fileText':fileText}
-        
+
         return self._create_group("signatures", body=body, owners=owners)
 
     def create_threat(self, name, createIfExists=True, owners=None):
@@ -1400,14 +1417,14 @@ class ThreatConnect(object):
         body = {'name' : name}
 
         return self._create_group("threats", body=body, owners=owners)
-        
+
     def create_victim(self, name, org=None, suborg=None, workLocation=None, nationality=None, createIfExists=True, owners=None):
         if not name or name is None:
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message("Name is required")   #todo appropriate error
             return tr
-            
+
         # user might not want to create duplicate victims if they exist
         if not createIfExists:
             self.add_filter('name', '==', name)
@@ -1415,7 +1432,7 @@ class ThreatConnect(object):
             self.reset_filter()
             if results.single_result() is not None:
                 return results
-                
+
         body = {'name' : name}
         if org is not None:
             body['org'] = org
@@ -1425,13 +1442,13 @@ class ThreatConnect(object):
             body['workLocation'] = workLocation
         if nationality is not None:
             body['nationality'] = nationality
-        
+
         tr = ThreatResponse(self._data_structures['victims'])
 
         request_uri = self._resource_types['victims']['request_uri']
-        
+
         return self._api_response_owners(tr, request_uri, owners, method="POST", body=body)
-        
+
     def create_victimEmailAddress(self, victim_id, emailAddress, addressType=None, createIfExists=False, owners=None):
         if not createIfExists:
             self.add_filter('address', '==', emailAddress)
@@ -1439,19 +1456,19 @@ class ThreatConnect(object):
             self.reset_filter()
             if results.single_result() is not None:
                 return results
-                
+
         body = {'address' : emailAddress}
         if addressType is not None:
             body['addressType'] = addressType
 
         data_structure = ['id', 'type', 'webLink', 'address', 'addressType']
         tr = ThreatResponse(data_structure)
-        
+
         request_uri = self._resource_types['victims']['request_uri']
         request_uri += "/%s" % str(victim_id)
         request_uri += "/victimAssets"
         request_uri += "/emailAddresses"
-            
+
         return self._api_response_owners(tr, request_uri, owners, method="POST", body=body)
 
     def create_indicator_attribute(self, indicator_type, indicator, attribute_type, attribute_value, createIfExists=True, displayed=False, owners=None):
@@ -1470,20 +1487,20 @@ class ThreatConnect(object):
             return tr
 
         #todo - validate "displayed" field?
-        
+
         # If createIfExists flag is set to False, check and update existing attribute of this type
         # TODO - needs some love to check for multiple instances of attributes; currently just updates first instance
         if not createIfExists:
             att_results = self.get_indicator_attributes(indicator_type, indicator, owners=owners)
             if att_results.status() != "Success":
                 return att_results
-            
+
             atts = json.loads(att_results.data().json())
             for att in atts:
                 if att['type'].lower() == attribute_type.lower():
                     return self.update_indicator_attribute(indicator_type, indicator, att['id'], attribute_value, displayed=displayed, owners=owners)
-            
-                
+
+
 
         body = {'type' : attribute_type, 'value' : attribute_value, 'displayed' : displayed}
         data_structure = ['dateAdded', 'id', 'type', 'value', 'lastModified', 'displayed']
@@ -1491,14 +1508,14 @@ class ThreatConnect(object):
 
         if indicator_type == 'urls':
             indicator = urllib.quote(indicator, safe='~')
-        
+
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/%s" % indicator_type
         request_uri += "/%s" % indicator
         request_uri += "/attributes"
 
-        return self._api_response_owners(tr, request_uri, owners=owners, body=body, method="POST")        
-    
+        return self._api_response_owners(tr, request_uri, owners=owners, body=body, method="POST")
+
     def create_group_attribute(self, group_type, group_id, attribute_type, attribute_value, createIfExists=True, displayed=None, owners=None):
        # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1513,14 +1530,14 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message("Group ID must be an integer")   #todo make thsi configurable
             return tr
-            
+
         # If createIfExists flag is set to False, check and update existing attribute of this type
         # TODO - needs some love to check for multiple instances of attributes; currently just updates first instance
         if not createIfExists:
             att_results = self.get_group_attributes(group_type, group_id)
             if att_results.status() != "Success":
                 return att_results
-            
+
             atts = json.loads(att_results.data().json())
             for att in atts:
                 if att['type'].lower() == attribute_type.lower():
@@ -1540,30 +1557,30 @@ class ThreatConnect(object):
         request_uri += "/attributes"
 
         return self._api_response_owners(tr, request_uri, owners=owners, body=body, method="POST")
-        
+
     def delete_fileOccurrence(self, hash, id, owners=None):
         # validate indicator
         if not self._validate_indicator(hash):
             tr = ThreatResponse([])
-            tr.add_request_status(self._failure_status)    
+            tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_indicator)
             return tr
-        
+
         # validate fileOccurrence id
         if not id or not isinstance(id, int):
             tr = ThreatResponse([])
-            tr.add_request_status(self._failure_status)    
+            tr.add_request_status(self._failure_status)
             tr.add_error_message("Bad fileOccurrence ID, must be an integer")
             return tr
-            
+
         request_uri = self._resource_types['indicators']['request_uri']
-        request_uri += "/files" 
+        request_uri += "/files"
         request_uri += "/%s" % hash
         request_uri += "/fileOccurrences"
         request_uri += "/%d" % int(id)
-        
+
         tr = ThreatResponse([])
-        
+
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
 
     def delete_indicator_attribute(self, indicator_type, indicator, attribute_id, owners=None):
@@ -1600,7 +1617,6 @@ class ThreatConnect(object):
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
 
-
     def delete_group_attribute(self, group_type, group_id, attribute_id, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1631,7 +1647,7 @@ class ThreatConnect(object):
         request_uri += "/attributes/%d" % attribute_id
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
-        
+
     def delete_securityLabel_from_attribute(self, main_branch, main_val, attribute_id, securityLabel, owners=None):
         # validate attribute id
         if not isinstance(int(attribute_id), int):
@@ -1701,7 +1717,7 @@ class ThreatConnect(object):
 
         tr = ThreatResponse(self._data_structures['securityLabels'])
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
-        
+
     def delete_securityLabel_from_group(self, group_type, group_id, securityLabel, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1775,7 +1791,7 @@ class ThreatConnect(object):
         request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
-    
+
     def delete_tag_from_indicator(self, indicator_type, indicator, tag, owners=None):
         # validate indicator type
         if not self._validate_indicator_type(indicator_type):
@@ -1803,7 +1819,7 @@ class ThreatConnect(object):
         request_uri += "/tags/%s" % urllib.quote(tag, safe='~')
 
         return self._api_response_owners(tr, request_uri, owners, method="DELETE")
-        
+
     def dissociate_group_from_group(self, from_group_type, from_group_id, to_group_type, to_group_id, owners=None):
         # validate group type
         if from_group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1826,8 +1842,8 @@ class ThreatConnect(object):
         request_uri += "/groups/%s" % to_group_type
         request_uri += "/%d" % int(to_group_id)
 
-        return self._api_response_owners(tr, request_uri, owners, method="DELETE") 
-    
+        return self._api_response_owners(tr, request_uri, owners, method="DELETE")
+
     def dissociate_group_from_indicator(self, group_type, group_id, indicator_type, indicator, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -1864,8 +1880,7 @@ class ThreatConnect(object):
 
     def dissociate_indicator_from_group(self, indicator_type, indicator, group_type, group_id, owners=None):
         return self.dissociate_group_from_indicator(self, group_type, group_id, indicator_type, indicator_id, owners)
-        
-        
+
     def get_adversary_by_id(self, resource_id):
         """Get adversary by id.
 
@@ -2012,24 +2027,24 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "emails"
         return self._get_resource_by_tag(tr, resource_type, tag_name, owners)
-        
+
     def get_fileOccurrences(self, hash, owners=None):
-        # validate indicator 
+        # validate indicator
         if not self._validate_indicator(hash):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_indicator)
             return tr
-            
+
         data_structure = ['fileName', 'path', 'id', 'date']
         tr = ThreatResponse(data_structure)
         tr.add_filter(self._data_filter)
-        
+
         request_uri = self._resource_types['indicators']['request_uri']
         request_uri += "/files"
         request_uri += "/%s" % hash
         request_uri += "/fileOccurrences"
-        
+
         return self._api_response_owners(tr, request_uri, owners=owners)
 
     def get_indicator_attributes(self, indicator_type, indicator, owners=None):
@@ -2040,7 +2055,7 @@ class ThreatConnect(object):
             tr.add_error_message(self._bad_indicator_type)
             return tr
 
-        # validate indicator 
+        # validate indicator
         if not self._validate_indicator(indicator):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -2061,14 +2076,6 @@ class ThreatConnect(object):
         request_uri += "/attributes"
 
         return self._api_response_owners(tr, request_uri, owners=owners)
-
-    
-
-    
-
-    
-
-    
 
     def get_group_attributes(self, group_type, group_id):
         """Get all group attributes.
@@ -2112,23 +2119,23 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "groups"
         return self._get_resource(tr, resource_type, owners)
-        
+
     def get_groups_by_group(self, group_id, group_type, owners=None):
         """Get all the groups associated with a provided group:
-        
+
         /v2/groups/<group type>/<group id>/groups
-        
+
         Args:
             group_id: (string) the string ID of the group
             group_type: (string) the type of the group (incidents, threats, etc.)
-        
+
         """
-        
-        
+
+
         data_structure = ['dateAdded', 'id', 'name', 'ownerName', 'type', 'webLink']
         tr = ThreatResponse(data_structure)
         tr.add_filter(self._data_filter)
-        
+
         request_uri = self._resource_types['groups']['request_uri']
         request_uri += "/%s" % group_type
         request_uri += "/%s" % group_id
@@ -2553,7 +2560,7 @@ class ThreatConnect(object):
         resource_type = "owners"
         owners = []
         return self._get_resource_by_indicator(tr, resource_type, indicator, indicator_type, owners)
-        
+
     def get_securityLabels_for_attribute(self, main_branch, main_val, attribute_id, owners=None):
         # validate attribute id
         if not isinstance(int(attribute_id), int):
@@ -2566,14 +2573,14 @@ class ThreatConnect(object):
         if main_branch in self.indicator_types:
             indicator_type = main_branch
             indicator = main_val
-            
+
             # indicator type
             if indicator_type is None:
                 indicator_type = self.get_indicator_type(indicator)
             elif not self._validate_indicator_type(indicator_type):
                 tr.add_request_status(self._failure_status)
                 tr.add_error_message(self._bad_indicator_type)
-                return tr 
+                return tr
 
             # indicator val
             if not self._validate_indicator(indicator):
@@ -2622,7 +2629,7 @@ class ThreatConnect(object):
         tr = ThreatResponse(self._data_structures['securityLabels'])
 
         return self._api_response_owners(tr, request_uri, owners)
-        
+
     def get_securityLabels_for_indicator(self, indicator_type, indicator, owners=None):
         # validate indicator
         if not self._validate_indicator(indicator):
@@ -2919,8 +2926,7 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "threats"
         return self._get_resource_by_tag(tr, resource_type, tag_name, owners)
-        
-        
+
     def get_victims(self, owners=None):
         """Get all victims.
 
@@ -2937,7 +2943,7 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "victims"
         return self._get_resource(tr, resource_type, owners)
-        
+
     def get_victim_by_id(self, resource_id):
         """Get victim by specified id
 
@@ -2955,12 +2961,12 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "victims"
         return self._get_resource_by_id(tr, resource_type, resource_id)
-        
+
     def get_victims_by_group(self, group_type, group_id, owners=None):
         """Get victims by group.
 
         /v2/groups/<group type>/<group id>/victims?owner=<owner>
-        
+
         Args:
             group_type: (string) The predefined group type.
             group_id: (string) The ThreatConnect group ID.
@@ -2985,7 +2991,7 @@ class ThreatConnect(object):
         request_uri += "/victims"
 
         return self._api_response_pagination(tr, request_uri, owners)
-    
+
     def get_victims_by_indicator(self, indicator, indicator_type=None, owners=None):
         """Get all victims by indicator.
 
@@ -3004,28 +3010,27 @@ class ThreatConnect(object):
         tr.add_filter(self._data_filter)
         resource_type = "victims"
         return self._get_resource_by_indicator(tr, resource_type, indicator, indicator_type, owners)
-        
-        
+
     def get_victimAssets(self, victimId):
         data_structure = ['id', 'name', 'type', 'webLink']
         tr = ThreatResponse(data_structure)
         tr.add_filter(self._data_filter)
-        
+
         request_uri = self._resource_types['victims']['request_uri']
         request_uri += "/%s" % victimId
         request_uri += "/victimAssets"
-        
+
         return self._api_response_pagination(tr, request_uri)
-        
+
     def get_victimEmailAddresses(self, victimId):
         data_structure = ['id', 'type', 'webLink', 'address', 'addressType']
         tr = ThreatResponse(data_structure)
         tr.add_filter(self._data_filter)
-        
+
         request_uri = self._resource_types['victims']['request_uri']
         request_uri += "/%s" % victimId
         request_uri += "/victimAssets/emailAddresses"
-        
+
         return self._api_response_pagination(tr, request_uri)
 
     def set_max_results(self, max_results):
@@ -3039,7 +3044,7 @@ class ThreatConnect(object):
             print self._bad_max_results
         else:
             self._api_max_results = max_results
-            
+
     def update_address(self, ip, rating=None, confidence=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
@@ -3060,10 +3065,10 @@ class ThreatConnect(object):
             body['confidence'] = confidence
 
         return self._update_indicator('addresses', ip, body=body, owners=owners)
-        
+
     def update_email(self, group_id, name, fromField, subject, header, emailBody, toField=None, owners=None):
         body = {}
-        
+
         if name is not None and name:
             body['name'] = name
 
@@ -3104,7 +3109,7 @@ class ThreatConnect(object):
             body['confidence'] = confidence
 
         return self._update_indicator('emailAddresses', emailAddress, body=body, owners=owners)
-        
+
     def update_file(self, hash, rating=None, confidence=None, size=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
@@ -3117,7 +3122,7 @@ class ThreatConnect(object):
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_confidence)
             return tr
-            
+
         if size is not None and not isinstance(size, int):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -3131,27 +3136,27 @@ class ThreatConnect(object):
             body['confidence'] = confidence
         if size is not None:
             body['size'] = size
-            
-            
+
+
         return self._update_indicator('files', hash, body=body, owners=owners)
-        
+
     def update_fileOccurrence(self, hash, id, fileName=None, path=None, date=None, owners=None):
         # validate indicator
         if not self._validate_indicator(hash):
             tr = ThreatResponse([])
-            tr.add_request_status(self._failure_status)    
+            tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_indicator)
             return tr
-            
+
         # validate fileOccurrence id
         if not id or not isinstance(id, int):
             tr = ThreatResponse([])
-            tr.add_request_status(self._failure_status)    
+            tr.add_request_status(self._failure_status)
             tr.add_error_message("Bad fileOccurrence ID, must be an integer")
             return tr
-        
+
         #todo validate date
-        
+
         body = {}
         if fileName is not None:
             body['fileName'] = fileName
@@ -3159,17 +3164,17 @@ class ThreatConnect(object):
             body['path'] = path
         if date is not None:
             body['date'] = date
-                      
+
         request_uri = self._resource_types['indicators']['request_uri']
-        request_uri += "/files" 
+        request_uri += "/files"
         request_uri += "/%s" % hash
         request_uri += "/fileOccurrences"
         request_uri += "/%d" % int(id)
-        
+
         tr = ThreatResponse(['id', 'fileName', 'path', 'date'])
-        
+
         return self._api_response_owners(tr, request_uri, owners=owners, method="PUT", body=body)
-            
+
     def update_group_attribute(self, group_type, group_id, attribute_id, attribute_value, displayed=None, owners=None):
         # validate group type
         if group_type not in ['adversaries', 'emails', 'incidents', 'signatures', 'threats']:
@@ -3193,7 +3198,7 @@ class ThreatConnect(object):
             return tr
 
         tr = ThreatResponse([])
-        
+
         body = {'value' : attribute_value}
         if displayed is not None and displayed in ['true', 'false', True, False]:
             body['displayed'] = displayed
@@ -3204,14 +3209,14 @@ class ThreatConnect(object):
         request_uri += "/attributes/%d" % attribute_id
 
         return self._api_response_owners(tr, request_uri, owners=owners, body=body, method="PUT")
-    
+
     def update_host(self, host, rating=None, confidence=None, whois=None, dns=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
             tr.add_error_message(self._bad_rating)
             return tr
-            
+
         if confidence is not None and not self._validate_confidence(confidence):
             tr = ThreatResponse([])
             tr.add_request_status(self._failure_status)
@@ -3229,7 +3234,7 @@ class ThreatConnect(object):
             body['dnsActive'] = dns
 
         return self._update_indicator('hosts', host, body=body, owners=owners)
-    
+
     def update_incident(self, incident_id, name=None, eventDate=None, owners=None):
         if name is None and eventDate is None:
             tr = ThreatResponse([])
@@ -3245,7 +3250,7 @@ class ThreatConnect(object):
             body['eventDate'] = eventDate
 
         return self._update_group('incidents', incident_id, body, owners)
-    
+
     def update_indicator_attribute(self, indicator_type, indicator, attribute_id, attribute_value, displayed=None, owners=None):
         # indicator type
         if not self._validate_indicator_type(indicator_type):
@@ -3301,7 +3306,6 @@ class ThreatConnect(object):
 
         return self._update_group('signatures', group_id, body=body, owners=owners)
 
-
     def update_threat(self, threat_id, name, owners=None):
         if name is None:
             tr = ThreatResponse([])
@@ -3311,7 +3315,7 @@ class ThreatConnect(object):
         body = {'name' : name}
 
         return self._update_group('threats', threat_id, body, owners)
-    
+
     def update_url(self, url, rating=None, confidence=None, owners=None):
         if rating is not None and not self._validate_rating(rating):
             tr = ThreatResponse([])
@@ -3391,7 +3395,7 @@ class ThreatResponse(object):
                     cleanVal = str(filter['value']).replace("'", "")
 
                     myexpression = "'%s' %s '%s'" % (cleanName, filter['expression'], cleanVal)
-                    
+
                     if not eval(myexpression):
                         add_data = False
                         break
@@ -3787,10 +3791,10 @@ class AttributeData(ResultData):
     def __init__(self, data_structure):
         ResultData.__init__(self, data_structure)
         self._data = []
-        
+
 class FileOccurrenceData(ResultData):
     """
-    
+
     "fileOccurrence" : [ {
       "id" : 8211,
       "fileName" : "test.dll",
@@ -3945,7 +3949,7 @@ class SignatureData(ResultData):
     def __init__(self, data_structure):
         ResultData.__init__(self, data_structure)
         self._data = []
-        
+
 class SignatureDownload(ResultData):
     """Signature Data
 
@@ -4038,7 +4042,7 @@ class VictimData(ResultData):
     def __init__(self, data_structure):
         ResultData.__init__(self, data_structure)
         self._data = []
-        
+
 class VictimAssetData(ResultData):
     """VictimAsset Data
      "victimAsset" : [ {
@@ -4046,12 +4050,12 @@ class VictimAssetData(ResultData):
           "name" : "johnqdoe@viccorp.org",
           "type" : "EmailAddress",
           "webLink" : "https://app.threatconnect.com/tc/auth/victim/victim.xhtml?victim=543"
-        }, 
+        },
     """
     def __init__(self, data_structure):
         ResultData.__init__(self, data_structure)
         self._data = []
-        
+
 class VictimEmailAddressData(ResultData):
     """VictimAsset Data
      "victimEmailAddress" : {
@@ -4066,7 +4070,7 @@ class VictimEmailAddressData(ResultData):
     def __init__(self, data_structure):
         ResultData.__init__(self, data_structure)
         self._data = []
-        
+
 class IndicatorData(ResultData):
     """Indicator Data
 
