@@ -78,6 +78,11 @@ bad_indicator_type = 'invalid indicator type'
 bad_group_type = 'invalid group type'
 
 #
+# error message for bad victim id
+#
+bad_victim_id = 'invalid victim id'
+
+#
 # error message for invalid request uri
 #
 bad_request_uri = 'invalid request uri'
@@ -200,15 +205,15 @@ data_structure_defs = {
             'urls': [
                 'confidence', 'dateAdded', 'description', 'id',
                 'lastModified', 'owner', 'rating', 'text', 'webLink'],
-             'adversaries' : ['dateAdded', 'id', 'name', 'owner', 'webLink'],
-             'emails' : ['dateAdded', 'id', 'name', 'ownerName', 'score', 'webLink'],
-             'incidents' : ['dateAdded', 'eventDate', 'id', 'name', 'ownerName', 'webLink'],
-             'signatures' : ['dateAdded', 'fileName', 'fileType', 'id', 'name', 'owner', 'webLink'],
-             'threats' : ['dateAdded', 'id', 'name', 'ownerName', 'webLink'],
-             'securityLabels' : ['name', 'description', 'dateAdded'],
-             'tags' : ['name', 'webLink'],
-             'victims' : ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink'],
-             'victimAssets' : ['id', 'name', 'type', 'webLink']
+                'adversaries' : ['dateAdded', 'id', 'name', 'owner', 'webLink'],
+                'emails' : ['dateAdded', 'id', 'name', 'ownerName', 'score', 'webLink'],
+                'incidents' : ['dateAdded', 'eventDate', 'id', 'name', 'ownerName', 'webLink'],
+                'signatures' : ['dateAdded', 'fileName', 'fileType', 'id', 'name', 'owner', 'webLink'],
+                'threats' : ['dateAdded', 'id', 'name', 'ownerName', 'webLink'],
+                'securityLabels' : ['name', 'description', 'dateAdded'],
+                'tags' : ['name', 'webLink'],
+                'victims' : ['id', 'name', 'org', 'suborg', 'workLocation', 'nationality', 'webLink'],
+                'victimAssets' : ['id', 'name', 'type', 'webLink']
              }
 
 #
